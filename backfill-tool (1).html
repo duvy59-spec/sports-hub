@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sports Hub Backfill</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0a0f; color: #f4f2ee; font-family: 'Barlow', sans-serif; padding-bottom: 60px; }
+header { background: #13131a; border-bottom: 2px solid #252535; padding: 14px 18px; }
+.logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.4rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.logo span { color: #ffd700; }
+.main { max-width: 660px; margin: 0 auto; padding: 24px 16px; }
+.card { background: #13131a; border: 1px solid #252535; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+.label { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: #6b6b80; margin-bottom: 14px; }
+.chat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chat-btn { padding: 12px 14px; border-radius: 10px; border: 1.5px solid #252535; background: #1c1c26; color: #6b6b80; font-family: 'Barlow', sans-serif; font-size: 0.82rem; cursor: pointer; text-align: left; line-height: 1.4; transition: all 0.15s; }
+.chat-btn:hover { border-color: #6b6b80; color: #f4f2ee; }
+.chat-btn.selected { border-color: #ffd700; color: #f4f2ee; background: #1a1a0a; }
+.chat-kid { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+textarea { width: 100%; min-height: 200px; background: #1c1c26; border: 1px solid #252535; border-radius: 10px; padding: 14px; color: #f4f2ee; font-family: monospace; font-size: 0.82rem; line-height: 1.6; resize: vertical; }
+textarea:focus { outline: none; border-color: #6b6b80; }
+.char-count { text-align: right; font-size: 0.72rem; color: #6b6b80; margin-top: 6px; }
+.btn-primary { width: 100%; padding: 16px; background: #ffd700; color: #000; border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; margin-top: 8px; transition: all 0.15s; }
+.btn-primary:disabled { background: #252535; color: #6b6b80; cursor: not-allowed; }
+.btn-success { width: 100%; padding: 16px; background: #4ade80; color: #000; border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; margin-top: 8px; transition: all 0.15s; }
+.btn-success:disabled { background: #252535; color: #6b6b80; cursor: not-allowed; }
+.btn-reset { width: 100%; padding: 12px; margin-top: 10px; background: transparent; border: 1px solid #252535; border-radius: 10px; color: #6b6b80; font-family: 'Barlow', sans-serif; font-size: 0.85rem; cursor: pointer; }
+.hidden { display: none; }
+.progress-wrap { background: #252535; border-radius: 4px; height: 6px; margin: 12px 0; overflow: hidden; }
+.progress-bar { height: 100%; background: #ffd700; border-radius: 4px; transition: width 0.4s; width: 0%; }
+.progress-status { font-size: 0.85rem; color: #6b6b80; }
+.log { margin-top: 12px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #6b6b80; line-height: 1.8; }
+.log-found { color: #4ade80; }
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.stat { background: #1c1c26; border-radius: 10px; padding: 12px 8px; text-align: center; }
+.stat-num { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.8rem; line-height: 1; }
+.stat-lbl { font-size: 0.7rem; color: #6b6b80; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.08em; }
+.event-row { background: #1c1c26; border-radius: 10px; padding: 11px 13px; margin-bottom: 7px; border-left: 3px solid #252535; display: flex; justify-content: space-between; align-items: center; }
+.event-kid { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; }
+.event-detail { font-size: 0.82rem; color: #6b6b80; margin-top: 3px; }
+.event-date { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.9rem; text-align: right; }
+.badge { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-left: 6px; }
+.badge-game { background: rgba(255,215,0,0.15); color: #ffd700; }
+.badge-practice { background: rgba(136,136,170,0.15); color: #8888aa; }
+.success-box { background: #0a2010; border: 1px solid #1a4020; border-left: 3px solid #4ade80; border-radius: 10px; padding: 16px; margin-top: 12px; text-align: center; }
+.success-box .big { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.3rem; color: #4ade80; }
+.success-box p { font-size: 0.85rem; color: #6b6b80; margin-top: 6px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Sports <span>Hub</span> &mdash; Backfill</div>
+</header>
+
+<div class="main">
+
+  <div class="card">
+    <div class="label">Step 1 &mdash; Select chat</div>
+    <div class="chat-grid">
+      <div class="chat-btn" id="chat0" onclick="selectChat(0)">
+        <div class="chat-kid" style="color:#00d4ff">Nathaniel</div>
+        Moriah Boys Soccer
+      </div>
+      <div class="chat-btn" id="chat1" onclick="selectChat(1)">
+        <div class="chat-kid" style="color:#00d4ff">Nathaniel</div>
+        CMEK Boys 7 Purple
+      </div>
+      <div class="chat-btn" id="chat2" onclick="selectChat(2)">
+        <div class="chat-kid" style="color:#ff6b35">Joelle</div>
+        CMEK Girls 5 Purple
+      </div>
+      <div class="chat-btn" id="chat3" onclick="selectChat(3)">
+        <div class="chat-kid" style="color:#ff6b35">Joelle</div>
+        Broncos 5 Girls Elite
+      </div>
+      <div class="chat-btn" id="chat4" onclick="selectChat(4)">
+        <div class="chat-kid" style="color:#7cfc5e">Amelie</div>
+        Broncos 3 Girls Royal
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Step 2 &mdash; Paste exported chat</div>
+    <textarea id="chatInput" oninput="onTextChange()" placeholder="Paste the full WhatsApp export here..."></textarea>
+    <div class="char-count" id="charCount">0 characters</div>
+    <button class="btn-primary" id="extractBtn" onclick="startExtract()" disabled>Extract Schedule Events</button>
+  </div>
+
+  <div class="card hidden" id="progressCard">
+    <div class="label">Processing</div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-status" id="progressStatus">Starting...</div>
+    <div class="log" id="logBox"></div>
+  </div>
+
+  <div class="card hidden" id="resultsCard">
+    <div class="label">Step 3 &mdash; Review and download</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statFound" style="color:#4ade80">0</div><div class="stat-lbl">Found</div></div>
+      <div class="stat"><div class="stat-num" id="statTotal" style="color:#ffd700">0</div><div class="stat-lbl">Messages</div></div>
+      <div class="stat"><div class="stat-num" id="statSkip" style="color:#6b6b80">0</div><div class="stat-lbl">Noise</div></div>
+    </div>
+    <div id="eventsList"></div>
+    <button class="btn-success" id="downloadBtn" onclick="downloadCSV()">Download CSV for Google Sheets</button>
+    <div class="success-box hidden" id="successBox">
+      <div class="big">CSV Downloaded!</div>
+      <p>Now go to your Google Sheet<br>File &rarr; Import &rarr; Upload the CSV &rarr; Append to current sheet</p>
+    </div>
+    <button class="btn-reset" onclick="resetAll()">Import another chat</button>
+  </div>
+
+</div>
+
+<script>
+var CHATS = [
+  { name: 'Moriah Boys Soccer',    child: 'Nathaniel', sport: 'Soccer',     color: '#00d4ff' },
+  { name: 'CMEK Boys 7 Purple',    child: 'Nathaniel', sport: 'Basketball', color: '#00d4ff' },
+  { name: 'CMEK Girls 5 Purple',   child: 'Joelle',    sport: 'Basketball', color: '#ff6b35' },
+  { name: 'Broncos 5 Girls Elite', child: 'Joelle',    sport: 'Basketball', color: '#ff6b35' },
+  { name: 'Broncos 3 Girls Royal', child: 'Amelie',    sport: 'Basketball', color: '#7cfc5e' }
+];
+
+var selectedIdx = -1;
+var extractedEvents = [];
+
+function selectChat(idx) {
+  selectedIdx = idx;
+  for (var i = 0; i < 5; i++) {
+    document.getElementById('chat' + i).classList.remove('selected');
+  }
+  document.getElementById('chat' + idx).classList.add('selected');
+  updateBtn();
+}
+
+function onTextChange() {
+  var len = document.getElementById('chatInput').value.length;
+  document.getElementById('charCount').textContent = len.toLocaleString() + ' characters';
+  updateBtn();
+}
+
+function updateBtn() {
+  var hasChat = selectedIdx >= 0;
+  var hasText = document.getElementById('chatInput').value.trim().length > 20;
+  document.getElementById('extractBtn').disabled = !(hasChat && hasText);
+}
+
+function parseMessages(text) {
+  var lines = text.split('\n');
+  var messages = [];
+  var current = null;
+  var re = /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?:\s?[AP]M)?)\s*[-]\s*([^:]+):\s*(.+)/i;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var m = line.match(re);
+    if (m) {
+      if (current) messages.push(current);
+      current = { date: m[1], time: m[2], sender: m[3].trim(), text: m[4].trim() };
+    } else if (current && line.trim()) {
+      current.text += ' ' + line.trim();
+    }
+  }
+  if (current) messages.push(current);
+  return messages.filter(function(msg) {
+    return msg.text.indexOf('end-to-end encrypted') === -1 &&
+           msg.text.indexOf('changed the subject') === -1;
+  });
+}
+
+async function startExtract() {
+  var rawText = document.getElementById('chatInput').value.trim();
+  if (!rawText || selectedIdx < 0) return;
+
+  var chat = CHATS[selectedIdx];
+  var messages = parseMessages(rawText);
+
+  document.getElementById('extractBtn').disabled = true;
+  document.getElementById('progressCard').classList.remove('hidden');
+  document.getElementById('resultsCard').classList.add('hidden');
+  document.getElementById('logBox').innerHTML = '';
+  extractedEvents = [];
+
+  setProgress(5, 'Found ' + messages.length + ' messages - scanning...');
+  addLog('Chat: ' + chat.name + ' (' + chat.child + ' / ' + chat.sport + ')');
+  addLog('Messages to analyze: ' + messages.length);
+
+  var BATCH = 15;
+  var batches = [];
+  for (var i = 0; i < messages.length; i += BATCH) {
+    batches.push(messages.slice(i, i + BATCH));
+  }
+
+  for (var b = 0; b < batches.length; b++) {
+    var pct = Math.round(10 + (b / batches.length) * 85);
+    setProgress(pct, 'Batch ' + (b+1) + ' of ' + batches.length + '...');
+    try {
+      var found = await processBatch(batches[b], chat);
+      extractedEvents = extractedEvents.concat(found);
+      if (found.length > 0) {
+        for (var f = 0; f < found.length; f++) {
+          addLog('Found: ' + found[f].type + ' on ' + found[f].date + ' at ' + found[f].time, true);
+        }
+      }
+    } catch(err) {
+      addLog('Batch error: ' + err.message);
+    }
+    await sleep(200);
+  }
+
+  extractedEvents = dedupe(extractedEvents);
+  setProgress(100, 'Done! Found ' + extractedEvents.length + ' events.');
+  addLog('Total unique events: ' + extractedEvents.length);
+
+  setTimeout(function() { showResults(messages.length); }, 600);
+}
+
+async function processBatch(messages, chat) {
+  var today = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  var batchText = messages.map(function(m) {
+    return '[' + m.date + ' ' + m.time + '] ' + m.sender + ': ' + m.text;
+  }).join('\n');
+
+  var systemPrompt = 'You extract sports schedule events from WhatsApp group chat messages.\n\nToday: ' + today + '\nChild: ' + chat.child + '\nSport: ' + chat.sport + '\nChat: ' + chat.name + '\n\nExtract ONLY actual schedule events (practices, games). Ignore all parent chatter, reactions, questions, congratulations.\n\nBe smart about abbreviations: tmrw, Sat, morn, 6ish, prac, etc.\nUse the message timestamp to resolve relative dates like "tmrw" or "this Sat".\nOnly include events from the last 2 weeks onward.\n\nRespond ONLY with a JSON array (empty array if nothing found):\n[\n  {\n    "child": "' + chat.child + '",\n    "sport": "' + chat.sport + '",\n    "type": "Practice" or "Game",\n    "date": "YYYY-MM-DD",\n    "time": "H:MM AM/PM or TBD",\n    "location": "location or TBD",\n    "status": "active" or "cancelled",\n    "changeNote": null or "brief note"\n  }\n]';
+
+  var response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: batchText }]
+    })
+  });
+
+  var data = await response.json();
+  var text = (data.content || []).map(function(b) { return b.text || ''; }).join('');
+  var clean = text.replace(/```json|```/g, '').trim();
+  try {
+    var parsed = JSON.parse(clean);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch(e) { return []; }
+}
+
+function dedupe(events) {
+  var seen = {};
+  return events.filter(function(e) {
+    var key = e.child + '-' + e.date + '-' + e.type + '-' + e.sport;
+    if (seen[key]) return false;
+    seen[key] = true;
+    return true;
+  }).sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+}
+
+function showResults(totalMessages) {
+  document.getElementById('statFound').textContent = extractedEvents.length;
+  document.getElementById('statTotal').textContent = totalMessages;
+  document.getElementById('statSkip').textContent = Math.max(0, totalMessages - extractedEvents.length);
+
+  var chat = CHATS[selectedIdx];
+  var html = '';
+  for (var i = 0; i < extractedEvents.length; i++) {
+    var e = extractedEvents[i];
+    var isGame = e.type === 'Game';
+    var d = new Date(e.date + 'T00:00:00');
+    var dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', weekday:'short' });
+    html += '<div class="event-row" style="border-left-color:' + chat.color + '">' +
+      '<div>' +
+        '<div class="event-kid" style="color:' + chat.color + '">' + e.child +
+          '<span class="badge ' + (isGame ? 'badge-game' : 'badge-practice') + '">' + e.type + '</span>' +
+        '</div>' +
+        '<div class="event-detail">' + e.sport + (e.time && e.time !== 'TBD' ? ' &middot; ' + e.time : '') + (e.location && e.location !== 'TBD' ? ' &middot; ' + e.location : '') + '</div>' +
+      '</div>' +
+      '<div class="event-date" style="color:' + chat.color + '">' + dateStr + '</div>' +
+    '</div>';
+  }
+
+  document.getElementById('eventsList').innerHTML = html || '<div style="color:#6b6b80;padding:12px 0">No events found in this chat.</div>';
+  document.getElementById('downloadBtn').disabled = extractedEvents.length === 0;
+  document.getElementById('resultsCard').classList.remove('hidden');
+}
+
+function downloadCSV() {
+  var headers = ['id','child','sport','type','date','time','location','status','changedAt','changeNote','createdAt'];
+  var now = new Date().toISOString().split('T')[0];
+  var rows = [headers];
+  for (var i = 0; i < extractedEvents.length; i++) {
+    var e = extractedEvents[i];
+    rows.push([
+      'evt_' + Date.now() + '_' + i,
+      e.child || '',
+      e.sport || '',
+      e.type || '',
+      e.date || '',
+      e.time || '',
+      e.location || '',
+      e.status || 'active',
+      '',
+      e.changeNote || '',
+      now
+    ]);
+  }
+  var csv = rows.map(function(row) {
+    return row.map(function(cell) {
+      return '"' + String(cell).replace(/"/g, '""') + '"';
+    }).join(',');
+  }).join('\n');
+
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  var chat = CHATS[selectedIdx];
+  a.download = chat.name.replace(/[^a-z0-9]/gi, '_') + '_events.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  document.getElementById('successBox').classList.remove('hidden');
+  document.getElementById('downloadBtn').textContent = 'CSV Downloaded!';
+}
+
+function setProgress(pct, status) {
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressStatus').textContent = status;
+}
+
+function addLog(msg, found) {
+  var log = document.getElementById('logBox');
+  var line = document.createElement('div');
+  if (found) line.className = 'log-found';
+  line.textContent = (found ? '+ ' : '  ') + msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+function resetAll() {
+  selectedIdx = -1;
+  extractedEvents = [];
+  document.getElementById('chatInput').value = '';
+  document.getElementById('charCount').textContent = '0 characters';
+  for (var i = 0; i < 5; i++) document.getElementById('chat' + i).classList.remove('selected');
+  document.getElementById('progressCard').classList.add('hidden');
+  document.getElementById('resultsCard').classList.add('hidden');
+  document.getElementById('successBox').classList.add('hidden');
+  document.getElementById('logBox').innerHTML = '';
+  document.getElementById('downloadBtn').textContent = 'Download CSV for Google Sheets';
+  document.getElementById('extractBtn').disabled = true;
+}
+</script>
+</body>
+</html>
